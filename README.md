@@ -74,8 +74,6 @@ The container allows you to modify the UID & GID of the user (`app`) inside the 
 
 - Continuing on the previous point: not all user preferences are saved. Hotkeys, Mouse Settings, and Keyboard settings seem to persist, but all other customization options such as mounted Virtual Media or Video Settings will be lost and need to be changed again if the container is restarted.
 
-- If the container crashes due to an error you must run `docker compose down` before bringing the container back up, or if you are modifying any env variables you must do a full `docker compose down && docker compose up` or `docker stop supermicro-java-ikvm`, otherwise the program will not be able to find the Java class necessary to make the iKVM connection. This will be addressed in a future release.
-
 - The container assumes your server's web interface is accessible via port 80 or port 443. If you are using a non-standard port and are having issues connecting you may need to modify the initialization script at `build/rootfs/etc/cont-init.d/50-setup-ikvm.sh`, specifically line 10, `url="https://$KVM_HOST"`.
 
 ## Credits

@@ -99,8 +99,8 @@ if ! test -f "$JAR"; then
     fi
 fi
 
-echo $JAR >> /etc/cont-env.d/KVM_JAR_FILE
-echo $(get_username "$JNLP") >> /etc/cont-env.d/KVM_EPHEMERAL_USERNAME
-echo $(get_password "$JNLP") >> /etc/cont-env.d/KVM_EPHEMERAL_PASSWORD
-echo $(get_app_class "$JNLP") >> /etc/cont-env.d/KVM_JAR_APPCLASS
-echo $(get_arguments "$JNLP") >> /etc/cont-env.d/KVM_LAUNCH_ARGUMENTS
+echo $JAR > /etc/cont-env.d/KVM_JAR_FILE
+echo $(get_username "$JNLP") > /etc/cont-env.d/KVM_EPHEMERAL_USERNAME
+echo $(get_password "$JNLP") > /etc/cont-env.d/KVM_EPHEMERAL_PASSWORD
+echo $(get_app_class "$JNLP") > /etc/cont-env.d/KVM_JAR_APPCLASS
+echo $(get_arguments "$JNLP") > /etc/cont-env.d/KVM_LAUNCH_ARGUMENTS
