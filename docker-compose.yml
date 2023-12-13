@@ -1,0 +1,27 @@
+version: '3.8'
+services:
+  
+  supermicro-java-ikvm:
+    image: supermicro-java-ikvm
+    container_name: supermicro-java-ikvm
+    build:
+      context: build 
+    environment:
+      TZ: ${TZ}
+      KVM_HOST: ${KVM_HOST} # IP or Hostname
+      KVM_USER: ${KVM_USER}  
+      KVM_PASS: ${KVM_PASS}
+      DISPLAY_WIDTH: 1024 # Display Width
+      DISPLAY_HEIGHT: 768 # Display Height
+    ports:
+      - ${WEB_PORT}:5800 # Web UI Port
+      - ${VNC_PORT}:5900 # VNC Port
+    volumes:
+      - ./vmedia:/app/vmedia/ # Virtual Media ISO's
+      - ./screenshots:/app/screenshots/ # Screenshots / Recordings
+      - supermicro-java-ikvm:/config/ # Persistent Configuration for user preferences
+    restart: no
+
+volumes:
+  supermicro-java-ikvm:
+    name: supermicro-java-ikvm
