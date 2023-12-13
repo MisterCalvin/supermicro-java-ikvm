@@ -25,7 +25,7 @@ ENV \
 	PATH="${PATH}:/opt/${ZULU_VERSION}/bin"
 
 RUN \
-	add-pkg curl socat unzip psmisc fontconfig libxrender1 libxtst6 && \
+	add-pkg curl socat unzip psmisc fontconfig libxrender1 libxtst6 x11-xserver-utils && \
 	add-pkg --virtual certs ca-certificates && \
 	mkdir /app && \
 	curl -O --output-dir /tmp/ https://cdn.azul.com/zulu/bin/${ZULU_VERSION}.tar.gz && \
