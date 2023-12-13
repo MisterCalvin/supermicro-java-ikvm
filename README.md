@@ -13,6 +13,8 @@ services:
     container_name: supermicro-java-ikvm
     environment:
       TZ: UTC
+      USER_ID: 1000
+      GROUP_ID: 1000
       KVM_HOST: # IP or Hostname
       KVM_USER: # Your IPMI Username
       KVM_PASS: # Your IPMI Password
@@ -51,7 +53,7 @@ docker run -d \
   -p 5900:5900 \
   -v ./vmedia:/app/vmedia/ \
   -v ./screenshots:/app/screenshots/ \
-  -v supermicro-java-ikvm:/config/
+  -v supermicro-java-ikvm:/config/ \
   --restart no \
   ghcr.io/mistercalvin/supermicro-java-ikvm:latest
 ```
