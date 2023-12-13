@@ -4,18 +4,16 @@ services:
   supermicro-java-ikvm:
     image: supermicro-java-ikvm
     container_name: supermicro-java-ikvm
-    build:
-      context: build 
     environment:
-      TZ: ${TZ}
-      KVM_HOST: ${KVM_HOST} # IP or Hostname
-      KVM_USER: ${KVM_USER}  
-      KVM_PASS: ${KVM_PASS}
+      TZ: UTC
+      KVM_HOST: # IP or Hostname
+      KVM_USER: # Your IPMI Username
+      KVM_PASS: # Your IPMI Password
       DISPLAY_WIDTH: 1024 # Display Width
       DISPLAY_HEIGHT: 768 # Display Height
     ports:
-      - ${WEB_PORT}:5800 # Web UI Port
-      - ${VNC_PORT}:5900 # VNC Port
+      - 5800:5800 # Web UI Port
+      - 5900:5900 # VNC Port
     volumes:
       - ./vmedia:/app/vmedia/ # Virtual Media ISO's
       - ./screenshots:/app/screenshots/ # Screenshots / Recordings

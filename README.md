@@ -1,5 +1,5 @@
-![Main Window](assets/mainwindow.png)  
-![Virtual Media](assets/virtualmedia.png)
+![Main Window](screenshots/mainwindow.png)  
+![Virtual Media](screenshots/virtualmedia.png)
 
 # Supermicro Java iKVM Viewer Docker
 A Docker container for connecting to Supermicro Java based iKVM Viewers, built from [jlesage/docker-baseimage-gui](https://github.com/jlesage/docker-baseimage-gui). No more hunting down old versions of Java, enabling insecure legacy algorithms, or configuring other solutions such as OpenWebStart or IcedTea-Web on multiple computers. Simply start the container, open your browser, and use your KVM viewer. Please see the [Disclaimers & Current Bugs](#disclaimers-&-current-bugs) before using.
@@ -12,12 +12,12 @@ services:
     image: ghcr.io/mistercalvin/supermicro-java-ikvm:latest
     container_name: supermicro-java-ikvm
     environment:
-      - TZ: UTC
-      - KVM_HOST: # IP or Hostname
-      - KVM_USER: # Your IPMI Username
-      - KVM_PASS: # Your IPMI Password
-      - DISPLAY_WIDTH: 1024 # Display Width
-      - DISPLAY_HEIGHT: 768 # Display Height
+      TZ: UTC
+      KVM_HOST: # IP or Hostname
+      KVM_USER: # Your IPMI Username
+      KVM_PASS: # Your IPMI Password
+      DISPLAY_WIDTH: 1024 # Display Width
+      DISPLAY_HEIGHT: 768 # Display Height
     ports:
       - 5800:5800 # Web UI Port
       - 5900:5900 # VNC Port
