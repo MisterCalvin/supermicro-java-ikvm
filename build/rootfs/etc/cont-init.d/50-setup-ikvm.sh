@@ -1,5 +1,23 @@
 #!/bin/sh
-
+# ipmikvm-tls2020 (part of ossobv/vcutil) // wdoekes/2020 // Public Domain
+#
+# A wrapper to call the SuperMicro iKVM console bypassing Java browser
+# plugins.
+#
+# Requirements: base64, curl, java
+#
+# Usage:
+#
+#   $ ipmikvm-tls2020
+#   Usage: ipmikvm-tls2020 [-u ADMIN] [-P ADMIN] IP.ADD.RE.SS
+#
+#   $ ipmikvm-tls2020 10.11.12.13 -P otherpassword
+#   (connects KVM console on IPMI device at 10.11.12.13)
+#
+# This has been tested with iKVM__V1.69.39.0x0.
+#
+# See also: ipmikvm
+#
 set -e # Exit immediately if a command exits with a non-zero status
 set -u # Treat unset variables as an error
 
@@ -19,6 +37,12 @@ get_launch_jnlp() {
     test -z "$fail" && echo "$launch_jnlp"
 }
 
+get_arguments() {
+    launch_jnlp="$1"
+    echo "$launch_jnlp" | sed -e '/<argument>/!d;s#.*<argument>\([^<]*\)</argument>.*#\1#' | 
+      sed -e "s/['\"$]//g;s/.*/&/" | sed -e 1,4d
+}
+
 get_username() {
     launch_jnlp="$1"
     echo "$launch_jnlp" | sed -e '/<argument>/!d' |
@@ -31,6 +55,11 @@ get_password() {
       sed -e '3!d;s#.*<argument>\([^<]*\)</argument>#\1#'
 }
 
+get_app_class() {
+    echo "$1" | sed -ne 's/.*<application-desc .*main-class="\([^"]*\)".*/\1/p'
+}
+
+# SYNOPSIS: get_app_class JNLP_DATA
 install_ikvm_application() {
     launch_jnlp="$1"
     destdir="$2"
@@ -73,3 +102,5 @@ fi
 echo $JAR >> /etc/cont-env.d/KVM_JAR_FILE
 echo $(get_username "$JNLP") >> /etc/cont-env.d/KVM_EPHEMERAL_USERNAME
 echo $(get_password "$JNLP") >> /etc/cont-env.d/KVM_EPHEMERAL_PASSWORD
+echo $(get_app_class "$JNLP") >> /etc/cont-env.d/KVM_JAR_APPCLASS
+echo $(get_arguments "$JNLP") >> /etc/cont-env.d/KVM_LAUNCH_ARGUMENTS
