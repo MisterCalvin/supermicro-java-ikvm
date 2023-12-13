@@ -2,7 +2,7 @@
 ![Virtual Media](screenshots/virtualmedia.png)
 
 # Supermicro Java iKVM Viewer Docker
-A Docker container for connecting to Supermicro Java based iKVM Viewers, built from [jlesage/docker-baseimage-gui](https://github.com/jlesage/docker-baseimage-gui). No more hunting down old versions of Java, enabling insecure legacy algorithms, or configuring other solutions such as OpenWebStart or IcedTea-Web on multiple computers. Simply start the container, open your browser, and use your KVM viewer. Please see the [Disclaimers & Current Bugs](#disclaimers-&-current-bugs) before using.
+A Docker container for connecting to Supermicro Java based iKVM Viewers, built from [jlesage/docker-baseimage-gui](https://github.com/jlesage/docker-baseimage-gui). No more hunting down old versions of Java, enabling insecure legacy algorithms, or configuring other solutions such as OpenWebStart or IcedTea-Web on multiple computers. Simply start the container, open your browser, and use your KVM viewer. Please see [Disclaimers & Current Bugs](#disclaimers--current-bugs) before using.
 
 ### docker compose
 ```
