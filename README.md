@@ -2,7 +2,7 @@
 ![Virtual Media](screenshots/virtualmedia.png)
 
 # Supermicro Java iKVM Viewer Docker
-A Docker container for connecting to Supermicro Java based iKVM Viewers, built from [jlesage/docker-baseimage-gui](https://github.com/jlesage/docker-baseimage-gui). No more hunting down old versions of Java, enabling insecure legacy algorithms, or configuring other solutions such as OpenWebStart or IcedTea-Web on multiple computers. Simply start the container, open your browser, and use your KVM viewer. Please see [Disclaimers & Current Bugs](#disclaimers--current-bugs) before using.
+A Docker container for connecting to Supermicro Java based iKVM Viewers, built from [jlesage/docker-baseimage-gui](https://github.com/jlesage/docker-baseimage-gui). See [Disclaimers & Current Bugs](#disclaimers--current-bugs) before using.
 
 ### docker compose
 ```
@@ -68,13 +68,13 @@ The container allows you to modify the UID & GID of the user (`app`) inside the 
 
 - This container has only been tested with the following hardware and firmware revision: `Supermicro X9DR3-F Motherboard (Nuvoton WPCM450 BMC), BMC Firmware 3.62 [SMT_X9_362.bin]`, and the details for the iKVM this board has: `ATEN iKVM Viewer v1.69.21 [KVM__V1.69.39.0x0.jar]`. This may work with other BMC manufacturers, but if you are having issues (or success) please [let me know](https://github.com/MisterCalvin/supermicro-java-ikvm/issues).
 
-- Selecting Español or Korean from Options > Preference > Language Setting will crash the program, and any attempts to reconnect to the Java viewer will fail. To fix this, login to your server's web interface, then navigate to Maintenance > iKVM Reset. If this does not work you can also reboot the IPMI unit by navigating to Maintenance > Unit Reset. Unfortunately I do not have a fix at this time, but the crash does not occur under Windows, and I could successfully switch the language to the aformentioned options albiet through a very convoluted manner with hit or miss reproducibility, which tells me I should be able to track this bug down and release a fix in the future.
+- Selecting Español or Korean from Options > Preference > Language Setting will crash the program, and any attempts to reconnect to the Java viewer will fail. To fix this, login to your server's web interface, then navigate to Maintenance > iKVM Reset. If this does not work you can also reboot the IPMI unit by navigating to Maintenance > Unit Reset.
 
-- If you are having issues with the UI upon boot, navigate to Options > Preference > Window and uncheck "Auto-resize window." Unfortunately this settings does not persist across reboots, so each time the container is restarted you will need to repeat this.
+- If you are having issues with the UI upon boot, navigate to Options > Preference > Window and uncheck "Auto-resize window." 
 
 - Continuing on the previous point: not all user preferences are saved. Hotkeys, Mouse Settings, and Keyboard settings seem to persist, but all other customization options such as mounted Virtual Media or Video Settings will be lost and need to be changed again if the container is restarted.
 
 - The container assumes your server's web interface is accessible via port 80 or port 443. If you are using a non-standard port and are having issues connecting you may need to modify the initialization script at `build/rootfs/etc/cont-init.d/50-setup-ikvm.sh`, specifically line 10, `url="https://$KVM_HOST"`.
 
 ## Credits
-Big thanks to Walter Doekes for their [ipmikvm-tls2020](https://www.osso.nl/blog/2020/supermicro-java-console-redirection-kvm/) script and research, without their work this project would have taken far longer. Thanks to Jocelyn Le Sage for their [docker-baseimage-gui](https://github.com/jlesage/docker-baseimage-gui) project, and to Dominik for the inspiration from their [docker-idrac6](https://github.com/DomiStyle/docker-idrac6) project.
+Walter Doekes for their [ipmikvm-tls2020](https://www.osso.nl/blog/2020/supermicro-java-console-redirection-kvm/) IPMI script
