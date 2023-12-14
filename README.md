@@ -61,14 +61,14 @@ docker run -d \
 Once the container is online you can access the web interface via the default port of `5800`. If you wish to password protect this page take a look [here](https://github.com/jlesage/docker-baseimage-gui#vnc-password) for steps on how to do so.
   
 ## User / Group Identifiers
-The container allows you to modify the UID & GID of the user (`app`) inside the container. If you would like to know more, please see [this page](https://github.com/jlesage/docker-baseimage-gui#usergroup-ids) for more information on the topic. If you are unsure of what this is I recommend leaving `USER_ID` and `GROUP_ID` at their default values of `1000`, or omitting them from your Docker compose files or run commands.
+You can specify the UID & GID for the user (`app`) inside the container, see [this page](https://github.com/jlesage/docker-baseimage-gui#usergroup-ids) for more information.
 
 ## Disclaimers & Current Bugs 
 - The image has additional environment variables you can customize, take a look at [this page](https://github.com/jlesage/docker-baseimage-gui#environment-variables) for more information. I have not tested the container with any variables other than what is defined in this repo; use these at your own risk.
 
-- This container has only been tested with the following hardware and firmware revision: `Supermicro X9DR3-F Motherboard (Nuvoton WPCM450 BMC), BMC Firmware 3.62 [SMT_X9_362.bin]`, and the details for the iKVM this board has: `ATEN iKVM Viewer v1.69.21 [KVM__V1.69.39.0x0.jar]`. This may work with other BMC manufacturers, but if you are having issues (or success) please [let me know](https://github.com/MisterCalvin/supermicro-java-ikvm/issues).
+- This container has been tested with the following hardware and firmware revision: `Supermicro X9DR3-F Motherboard (Nuvoton WPCM450 BMC), BMC Firmware 3.62 [SMT_X9_362.bin]`
 
-- Selecting Español or Korean from Options > Preference > Language Setting will crash the program, and any attempts to reconnect to the Java viewer will fail. To fix this, login to your server's web interface, then navigate to Maintenance > iKVM Reset. If this does not work you can also reboot the IPMI unit by navigating to Maintenance > Unit Reset.
+- Selecting Español or Korean from Options > Preference > Language Setting will cause a crash, and any attempts to reconnect to the Java viewer will fail. To fix this, login to your server's web interface, then navigate to Maintenance > iKVM Reset. If this does not work you can also reboot the IPMI unit by navigating to Maintenance > Unit Reset.
 
 - If you are having issues with the UI upon boot, navigate to Options > Preference > Window and uncheck "Auto-resize window." 
 
