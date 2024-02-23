@@ -74,7 +74,7 @@ You can specify the UID & GID for the user (`app`) inside the container, see [th
 
 - Continuing on the previous point: not all user preferences are saved. Hotkeys, Mouse Settings, and Keyboard settings seem to persist, but all other customization options such as mounted Virtual Media or Video Settings will be lost and need to be changed again if the container is restarted.
 
-- The container assumes your server's web interface is accessible via port 80 or port 443. If you are using a non-standard port and are having issues connecting you may need to modify the initialization script at `build/rootfs/etc/cont-init.d/50-setup-ikvm.sh`, specifically line 10, `url="https://$KVM_HOST"`.
+- The container assumes your server's web interface is accessible via port 80 or port 443. If you are using a non-standard port and are having issues connecting you may need to modify the initialization script at `build/rootfs/etc/cont-init.d/50-setup-ikvm.sh`, specifically [line 28, `url="https://$KVM_HOST"`](./build/rootfs/etc/cont-init.d/50-setup-ikvm.sh#L28).
 
 ## Credits
-Walter Doekes for their [ipmikvm-tls2020](https://www.osso.nl/blog/2020/supermicro-java-console-redirection-kvm/) IPMI script
+[Walter Doekes](https://github.com/wdoekes) for their [ipmikvm-tls2020](https://www.osso.nl/blog/2020/supermicro-java-console-redirection-kvm/) script
