@@ -30,6 +30,7 @@ get_launch_jnlp() {
     if curl --fail -sk --cookie-jar "$temp" -XPOST "$url/cgi/login.cgi" \
           --data "name=$KVM_USER&pwd=$KVM_PASS&check=00" -o/dev/null; then
         launch_jnlp=$(curl --fail -sk --cookie "$temp" \
+            --referer "$url/cgi/url_redirect.cgi?url_name=man_ikvm" \
             "$url/cgi/url_redirect.cgi?url_name=man_ikvm&url_type=jwsk")
         test $? -eq 0 && fail=
     fi
@@ -77,7 +78,7 @@ install_ikvm_application() {
     mkdir -p "$destdir"
     cd "$destdir"
     for x in $jar $linuxlibs; do
-        curl -o $x.pack.gz "$codebase$x.pack.gz"
+        curl -ko $x.pack.gz "$codebase$x.pack.gz"
         unpack200 $x.pack.gz $x
     done
     unzip -o liblinux*.jar
