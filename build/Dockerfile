@@ -1,7 +1,7 @@
 FROM --platform=linux/386 jlesage/baseimage-gui:debian-11-v4
 
 ARG CONTAINER_MAJOR_VERSION=1.0
-ARG CONTAINER_MINOR_VERSION=0
+ARG CONTAINER_MINOR_VERSION=1
 
 COPY assets/icon.png /tmp/icon.png
 
