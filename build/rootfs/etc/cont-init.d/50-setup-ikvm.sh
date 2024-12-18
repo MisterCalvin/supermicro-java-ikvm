@@ -35,11 +35,11 @@ log_debug "Using cache directory: $APP_CACHE_DIR"
 check_connection() {
     local url="$1"
     local timeout=5
-    log_debug "Testing connection to $url with ${timeout}s timeout"
+    log_debug "Testing connection to $(mask_sensitive "$url") with ${timeout}s timeout"
     
     # Extract hostname and try to resolve using multiple methods
     local hostname=$(echo "$url" | sed 's|^https://||')
-    log_debug "Testing connectivity to host: $hostname"
+    log_sensitive "DEBUG" "Testing connectivity to host:" "$hostname"
     
     # Try ping first
     if ping -c 1 -W 3 "$hostname" >/dev/null 2>&1; then
@@ -109,8 +109,9 @@ EOF
 
 get_launch_jnlp() {
     log_info "Beginning JNLP retrieval process"
-    log_debug "Target host: $KVM_HOST"
-    log_debug "Using credentials: user=$KVM_USER, password=<masked>"
+    log_sensitive "DEBUG" "Target host:" "$KVM_HOST"
+    log_sensitive "DEBUG" "Using credentials - user:" "$KVM_USER"
+    log_sensitive "DEBUG" "Using credentials - password:" "$KVM_PASS"
 
     fail=1
     url="https://$KVM_HOST"
@@ -119,14 +120,14 @@ get_launch_jnlp() {
     
     # Test basic connectivity first with timeout
     if ! curl --fail -sk --max-time 5 "$url" -o/dev/null; then
-        log_error "Cannot reach $url - possible network/firewall issue"
+        log_error "Cannot reach $(mask_sensitive "$url") - possible network/firewall issue"
         rm "$temp"
         return 1
     fi
-    log_debug "Basic connectivity test to $url successful"
+    log_sensitive "DEBUG" "Basic connectivity test successful for host:" "$KVM_HOST"
     
     # Attempt login with timeout
-    log_debug "Attempting authentication to $url/cgi/login.cgi"
+    log_sensitive "DEBUG" "Attempting authentication for host:" "$KVM_HOST"
     if ! curl --fail -sk --max-time 10 --cookie-jar "$temp" -XPOST "$url/cgi/login.cgi" \
           --data "name=$KVM_USER&pwd=$KVM_PASS&check=00" -o/dev/null; then
         log_error "Authentication failed - check credentials or IP restrictions"
@@ -167,13 +168,72 @@ get_launch_jnlp() {
     test -z "$fail" && echo "$launch_jnlp"
 }
 
-get_arguments() {
-    log_debug "Parsing arguments from JNLP"
+get_username() {
+    log_debug "Starting username extraction from JNLP"
     launch_jnlp="$1"
+    
+    username=$(echo "$launch_jnlp" | sed -e '/<argument>/!d' |
+      sed -e '2!d;s#.*<argument>\([^<]*\)</argument>#\1#')
+    
+    if [ -z "$username" ]; then
+        log_debug "Username extraction failed - no match found in expected position"
+        return 1
+    fi
+
+    # Write to env first so mask_sensitive can find it
+    echo "$username" > /etc/cont-env.d/KVM_EPHEMERAL_USERNAME
+    
+    # Now do logging after the value is in the environment
+    raw_xml=$(echo "$launch_jnlp" | grep -A1 -B1 '<argument>' | head -n3)
+    log_debug "Examining XML section:"
+    log_debug "$(mask_sensitive "$raw_xml")"
+    
+    log_sensitive "DEBUG" "Successfully extracted username:" "$username"
+    echo "$username"
+}
+
+get_password() {
+    log_debug "Starting password extraction from JNLP"
+    launch_jnlp="$1"
+    
+    password=$(echo "$launch_jnlp" | sed -e '/<argument>/!d' |
+      sed -e '3!d;s#.*<argument>\([^<]*\)</argument>#\1#')
+    
+    if [ -z "$password" ]; then
+        log_debug "Password extraction failed - no match found in expected position"
+        return 1
+    fi
+
+    echo "$password" > /etc/cont-env.d/KVM_EPHEMERAL_PASSWORD
+    
+    # Show XML section with conditional masking
+    password=$(cat /etc/cont-env.d/KVM_EPHEMERAL_PASSWORD)
+    raw_xml=$(echo "$launch_jnlp" | grep -A1 -B1 '<argument>' | head -n5 | tail -n3)
+    log_debug "Examining XML section:"
+    log_debug "$(mask_sensitive "$raw_xml" "$password" "$KVM_HOST")"
+    
+    log_sensitive "DEBUG" "Successfully extracted password:" "$(mask_sensitive $password)"
+    echo "$password"
+}
+
+get_arguments() {
+    log_debug "Starting arguments extraction from JNLP"
+    launch_jnlp="$1"
+    
+    username=$(cat /etc/cont-env.d/KVM_EPHEMERAL_USERNAME)
+    
+    raw_xml=$(echo "$launch_jnlp" | grep -A1 -B1 '<argument>')
+    log_debug "Found argument tags:"
+    log_debug "$(mask_sensitive "$raw_xml" "$username" "$KVM_HOST")"
     
     # Extract raw arguments and store in variable
     raw_args=$(echo "$launch_jnlp" | sed -e '/<argument>/!d;s#.*<argument>\([^<]*\)</argument>.*#\1#' | 
       sed -e "s/['\"$]//g;s/.*/&/" | sed -e 1,4d)
+    
+    if [ -z "$raw_args" ]; then
+        log_debug "No arguments found after first 4 entries"
+        return 1
+    fi
     
     # Convert newlines to spaces and trim trailing space
     args=$(echo "$raw_args" | tr '\n' ' ' | sed 's/ $//')
@@ -183,33 +243,32 @@ get_arguments() {
     
     # Create descriptive argument string
     description="KVM Port: $1, Virtual Media Port: $2, Company ID: $3, Board ID: $4, Use TLS: $5, Remote KVM Port: $6"
+    log_debug "Extracted arguments: $description"
     
-    log_debug "Extracted arguments with details: $description"
     echo "$args"
 }
 
-get_username() {
-    log_debug "Extracting username from JNLP"
-    launch_jnlp="$1"
-    username=$(echo "$launch_jnlp" | sed -e '/<argument>/!d' |
-      sed -e '2!d;s#.*<argument>\([^<]*\)</argument>#\1#')
-    log_sensitive "DEBUG" "Extracted username:" "$username"
-    echo "$username"
-}
-
-get_password() {
-    log_debug "Extracting password from JNLP"
-    launch_jnlp="$1"
-    password=$(echo "$launch_jnlp" | sed -e '/<argument>/!d' |
-      sed -e '3!d;s#.*<argument>\([^<]*\)</argument>#\1#')
-    log_debug "Extracted password (length: ${#password})"
-    echo "$password"
-}
-
 get_app_class() {
-    log_debug "Extracting application class from JNLP"
-    app_class=$(echo "$1" | sed -ne 's/.*<application-desc .*main-class="\([^"]*\)".*/\1/p')
-    log_debug "Extracted application class: $app_class"
+    log_debug "Starting application class extraction from JNLP"
+    launch_jnlp="$1"
+    
+    log_debug "Searching for main-class attribute in application-desc tag"
+    
+    # Store the raw XML section for debugging and mask hostnames
+    raw_xml=$(echo "$launch_jnlp" | grep -A1 -B1 'application-desc')
+    log_debug "Examining XML section:"
+    log_debug "$(mask_sensitive "$raw_xml" "$KVM_HOST")"
+    
+    # Attempt extraction
+    app_class=$(echo "$launch_jnlp" | sed -ne 's/.*<application-desc .*main-class="\([^"]*\)".*/\1/p')
+    
+    if [ -z "$app_class" ]; then
+        log_debug "Application class extraction failed - no main-class attribute found"
+        log_debug "Check if JNLP structure has changed or application-desc tag is missing"
+        return 1
+    fi
+    
+    log_debug "Successfully extracted application class: $app_class"
     echo "$app_class"
 }
 
@@ -227,7 +286,7 @@ install_ikvm_application() {
         log_error "Failed to extract codebase from JNLP"
         return 1
     fi
-    log_debug "Found codebase URL: $codebase"
+    log_debug "Found codebase URL: $(mask_sensitive "$codebase")"
     
     # Extract and validate JAR file
     jar=$(echo "$launch_jnlp" | sed -e '/<jar /!d;s/.* href="//;s/".*//')
@@ -243,7 +302,6 @@ install_ikvm_application() {
       sort -u)
     log_debug "Found Linux libraries: $linuxlibs"
     
-    # Create directory
     mkdir -p "$destdir"
     cd "$destdir"
     log_debug "Created and entered directory: $destdir"
@@ -252,7 +310,7 @@ install_ikvm_application() {
     for x in $jar $linuxlibs; do
         log_info "Downloading: $x"
         download_url="$codebase$x.pack.gz"
-        log_debug "Download URL: $download_url"
+        log_debug "Download URL: $(mask_sensitive "$download_url")"
         
         if curl -kLf "$download_url" -o "$x.pack.gz"; then
             log_debug "Successfully downloaded: $x.pack.gz"
@@ -306,7 +364,7 @@ fi
 log_info "Writing configuration to environment"
 log_debug "Setting up environment files in /etc/cont-env.d/"
 
-# Write and verify each configuration file
+# Write and verify each environment file
 echo "$JAR" > /etc/cont-env.d/KVM_JAR_FILE
 log_debug "Wrote JAR file path: $JAR"
 
@@ -331,7 +389,7 @@ else
     exit 1
 fi
 
-# Verify all required files exist
+# Verify all required environment files exist
 for file in KVM_JAR_FILE KVM_EPHEMERAL_USERNAME KVM_EPHEMERAL_PASSWORD KVM_JAR_APPCLASS KVM_LAUNCH_ARGUMENTS; do
     if [ ! -f "/etc/cont-env.d/$file" ]; then
         log_error "Missing required environment file: $file"

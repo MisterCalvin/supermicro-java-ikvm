@@ -2,8 +2,6 @@ services:
   supermicro-java-ikvm:
     image: ghcr.io/mistercalvin/supermicro-java-ikvm:latest
     container_name: supermicro-java-ikvm
-    build:
-      context: build/
     environment:
       TZ: UTC
       USER_ID: 1000

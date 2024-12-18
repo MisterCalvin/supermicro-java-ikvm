@@ -37,19 +37,57 @@ java_verbose_log() {
     chmod 600 "$java_verbose_log_file"
 }
 
-# Ephemeral usernames / passwords are the same, but let's mask them anyway
+# Mask sensitive values (credentials, hostnames, etc)
 mask_sensitive() {
     local input="$1"
-    local len=${#input}
-    if [ "$len" -eq 0 ]; then
-        echo "<empty>"
-    elif [ "$len" -le 4 ]; then
-        echo "****"
-    else
-        local prefix="${input%"${input#??}"}"
-        local suffix="${input#"${input%??}"}"
-        local masks=$(printf "%*s" $((len-4)) | tr ' ' '*')
-        echo "${prefix}${masks}${suffix}"
+    local masked="$input"
+
+    if [ "${CONTAINER_DEBUG:-0}" -eq 2 ]; then
+        echo "$input"
+        return
+    fi
+
+    # First mask our known sensitive environment values
+    if [ -n "$KVM_HOST" ]; then
+        # Extract base hostname for variant matching
+        local base_hostname=$(echo "$KVM_HOST" | cut -d. -f1)
+        masked=$(echo "$masked" | sed "s/$base_hostname[^[:space:]\"<>]*\>/********/g")
+    fi
+    if [ -n "$KVM_USER" ]; then
+        masked=$(echo "$masked" | sed "s/$KVM_USER/********/g")
+    fi
+    if [ -n "$KVM_PASS" ]; then
+        masked=$(echo "$masked" | sed "s/$KVM_PASS/********/g")
+    fi
+
+    # Then mask any ephemeral credentials
+    if [ -f /etc/cont-env.d/KVM_EPHEMERAL_USERNAME ]; then
+        local eph_user=$(cat /etc/cont-env.d/KVM_EPHEMERAL_USERNAME)
+        if [ -n "$eph_user" ]; then
+            local len=${#eph_user}
+            local stars=$(printf '%*s' "$len" | tr ' ' '*')
+            masked=$(echo "$masked" | sed "s/$eph_user/$stars/g")
+        fi
+    fi
+    if [ -f /etc/cont-env.d/KVM_EPHEMERAL_PASSWORD ]; then
+        local eph_pass=$(cat /etc/cont-env.d/KVM_EPHEMERAL_PASSWORD)
+        if [ -n "$eph_pass" ]; then
+            local len=${#eph_pass}
+            local stars=$(printf '%*s' "$len" | tr ' ' '*')
+            masked=$(echo "$masked" | sed "s/$eph_pass/$stars/g")
+        fi
+    fi
+
+    echo "$masked"
+}
+
+log_sensitive() {
+    local level="$1"
+    local prefix="$2"
+    local value="$3"
+    
+    if [ "${CONTAINER_DEBUG:-0}" -ge 1 ]; then
+        log_message "$level" "$prefix $(mask_sensitive "$value")"
     fi
 }
 
@@ -66,17 +104,7 @@ log_error() {
 }
 
 log_debug() {
-    if [ "${CONTAINER_DEBUG:-0}" = "1" ]; then
+    if [ "${CONTAINER_DEBUG:-0}" -ge 1 ]; then
         log_message "DEBUG" "$@"
-    fi
-}
-
-log_sensitive() {
-    local level="$1"
-    local prefix="$2"
-    local value="$3"
-    
-    if [ "${CONTAINER_DEBUG:-0}" -eq 1 ]; then
-        log_message "$level" "$prefix $(mask_sensitive "$value")"
     fi
 }
