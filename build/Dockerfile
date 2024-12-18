@@ -22,7 +22,9 @@ ENV \
     	KVM_PASS="" \
     	DISPLAY_WIDTH=1024 \
     	DISPLAY_HEIGHT=768 \
-	PATH="${PATH}:/opt/${ZULU_VERSION}/bin"
+		CONTAINER_DEBUG=0 \
+		JAVA_VERBOSE_LOGGING=0 \
+		PATH="${PATH}:/opt/${ZULU_VERSION}/bin"
 
 RUN \
 	add-pkg curl socat unzip psmisc fontconfig libxrender1 libxtst6 x11-xserver-utils && \
@@ -35,6 +37,7 @@ RUN \
 	set-cont-env JAVA_OPTS "-Djava.util.prefs.systemRoot=/config/xdg/config -Djava.util.prefs.userRoot=/config/xdg/config -Duser.home=/app -Djava.library.path=/config/xdg/cache" && \
 	mkdir -p /app/vmedia && \
 	mkdir -p /app/screenshots && \
+	mkdir -p /config/log/supermicro-java-ikvm/ && \
 	del-pkg certs && \
 	rm /tmp/${ZULU_VERSION}.tar.gz
 

@@ -1,12 +1,11 @@
-![Main Window](screenshots/mainwindow.png)  
-![Virtual Media](screenshots/virtualmedia.png)
+![Main Window](.github/img/mainwindow.png)  
+![Virtual Media](.github/img/virtualmedia.png)
 
 # Supermicro Java iKVM Viewer Docker
 A Docker container for connecting to Supermicro Java based iKVM Viewers, built from [jlesage/docker-baseimage-gui](https://github.com/jlesage/docker-baseimage-gui). See [Disclaimers & Current Bugs](#disclaimers--current-bugs) before using.
 
 ### docker compose
 ```
-version: '3.8'
 services:
   supermicro-java-ikvm:
     image: ghcr.io/mistercalvin/supermicro-java-ikvm:latest
@@ -49,6 +48,7 @@ docker run -d \
   -e KVM_PASS="" \
   -e DISPLAY_WIDTH="1024" \
   -e DISPLAY_HEIGHT="768" \
+  -e CONTAINER_DEBUG="0" \
   -p 5800:5800 \
   -p 5900:5900 \
   -v ./vmedia:/app/vmedia/ \
@@ -72,9 +72,12 @@ You can specify the UID & GID for the user (`app`) inside the container, see [th
 
 - If you are having issues with the UI upon boot, navigate to Options > Preference > Window and uncheck "Auto-resize window." 
 
-- Continuing on the previous point: not all user preferences are saved. Hotkeys, Mouse Settings, and Keyboard settings seem to persist, but all other customization options such as mounted Virtual Media or Video Settings will be lost and need to be changed again if the container is restarted.
+- Not all user preferences are saved. Hotkeys, Mouse Settings, and Keyboard settings will persist between container reboots, but all other customization options such as mounted Virtual Media or Video Settings will be lost and need to be changed again if the container is restarted.
 
 - The container assumes your server's web interface is accessible via port 80 or port 443. If you are using a non-standard port and are having issues connecting you may need to modify the initialization script at `build/rootfs/etc/cont-init.d/50-setup-ikvm.sh`, specifically [line 28, `url="https://$KVM_HOST"`](./build/rootfs/etc/cont-init.d/50-setup-ikvm.sh#L28).
+
+## Troubleshooting
+If you're having issues with the container you can try pulling the container with enhanced debug logging: `ghcr.io/mistercalvin/supermicro-java-ikvm:debug`. Be sure to set `CONTAINER_DEBUG=1` in your docker-compose.yml or for your docker run command.
 
 ## Credits
 [Walter Doekes](https://github.com/wdoekes) for their [ipmikvm-tls2020](https://www.osso.nl/blog/2020/supermicro-java-console-redirection-kvm/) script
