@@ -75,10 +75,17 @@ You can specify the UID & GID for the user (`app`) inside the container, see [th
 
 - Not all user preferences are saved. Hotkeys, Mouse Settings, and Keyboard settings will persist between container reboots, but all other customization options such as mounted Virtual Media or Video Settings will be lost and need to be changed again if the container is restarted.
 
-- The container assumes your server's web interface is accessible via port 80 or port 443. If you are using a non-standard port and are having issues connecting you may need to modify the initialization script at `build/rootfs/etc/cont-init.d/50-setup-ikvm.sh`, specifically [line 28, `url="https://$KVM_HOST"`](./build/rootfs/etc/cont-init.d/50-setup-ikvm.sh#L28).
+- The container assumes your server's web interface is accessible via port 80 or port 443. If you are using a non-standard port and are having issues connecting you may need to modify the initialization script at `build/rootfs/etc/cont-init.d/50-setup-ikvm.sh`, specifically [line 117, `url="https://$KVM_HOST"`](./build/rootfs/etc/cont-init.d/50-setup-ikvm.sh#L117).
 
 ## Troubleshooting
-If you're having issues with the container you can try pulling the container with enhanced debug logging: `ghcr.io/mistercalvin/supermicro-java-ikvm:debug`. Be sure to set `CONTAINER_DEBUG=1` in your docker-compose.yml or for your docker run command.
+If you are having issues you can try pulling the following container: `ghcr.io/mistercalvin/supermicro-java-ikvm:debug`. This version contains enhanced debugging, be sure to set `CONTAINER_DEBUG=1` in your docker-compose.yml or for your docker run command.  
+
+Also try the following fix for a few problems related to the IPMI interface:
+
+> [!NOTE]
+> This will not reset the server itself, it will only reset or reboot the IPMI unit, so it is safe to do while the server is running.
+
+>Login to your server's web interface, then navigate to Maintenance > iKVM Reset. If this does not work you can also reboot the IPMI unit by navigating to Maintenance > Unit Reset.
 
 ## Credits
 [Walter Doekes](https://github.com/wdoekes) for their [ipmikvm-tls2020](https://www.osso.nl/blog/2020/supermicro-java-console-redirection-kvm/) script

@@ -3,6 +3,18 @@ FROM --platform=linux/386 jlesage/baseimage-gui:debian-12-v4
 ARG CONTAINER_MAJOR_VERSION=1
 ARG CONTAINER_MINOR_VERSION=0
 ARG CONTAINER_PATCH_VERSION=2
+ARG ZULU_VERSION=zulu8.82.0.21-ca-jre8.0.432-linux_i686
+
+ENV \
+	PATH="${PATH}:/opt/${ZULU_VERSION}/bin" \
+	LANG=en_US.UTF-8 \
+	KVM_HOST="" \
+	KVM_USER="" \
+	KVM_PASS="" \
+	DISPLAY_WIDTH=1024 \
+	DISPLAY_HEIGHT=768 \
+	CONTAINER_DEBUG=0 \
+	JAVA_VERBOSE_LOGGING=0 \
 
 COPY assets/icon.png /tmp/icon.png
 
@@ -14,21 +26,10 @@ RUN \
 		APP_ICON_URL=/tmp/icon.png && \
 		install_app_icon.sh "$APP_ICON_URL"
 
-ARG ZULU_VERSION=zulu8.82.0.21-ca-jre8.0.432-linux_i686
-
-ENV \
-		KVM_HOST="" \
-		KVM_USER="" \
-		KVM_PASS="" \
-		DISPLAY_WIDTH=1024 \
-		DISPLAY_HEIGHT=768 \
-		CONTAINER_DEBUG=0 \
-		JAVA_VERBOSE_LOGGING=0 \
-		PATH="${PATH}:/opt/${ZULU_VERSION}/bin"
-
 RUN \
-	add-pkg curl socat unzip psmisc fontconfig libxrender1 libxtst6 x11-xserver-utils && \
+	add-pkg curl socat unzip psmisc fontconfig libxrender1 libxtst6 x11-xserver-utils locales && \
 	add-pkg --virtual certs ca-certificates && \
+	localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8 && \
 	mkdir /app && \
 	curl -O --output-dir /tmp/ https://cdn.azul.com/zulu/bin/${ZULU_VERSION}.tar.gz && \
 	tar -C /opt/ -xvf /tmp/${ZULU_VERSION}.tar.gz && \
@@ -39,12 +40,8 @@ RUN \
 	mkdir -p /app/screenshots && \
 	mkdir -p /config/log/supermicro-java-ikvm/ && \
 	del-pkg certs && \
-	rm /tmp/${ZULU_VERSION}.tar.gz
-
-RUN add-pkg locales && rm -rf /var/lib/apt/lists/* \
-    && localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
-
-ENV LANG en_US.UTF-8
+	rm /tmp/${ZULU_VERSION}.tar.gz && \
+	rm -rf /var/lib/apt/lists/*
 
 COPY rootfs /
 
