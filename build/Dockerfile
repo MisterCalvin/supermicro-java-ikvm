@@ -1,27 +1,27 @@
-FROM --platform=linux/386 jlesage/baseimage-gui:debian-11-v4
+FROM --platform=linux/386 jlesage/baseimage-gui:debian-12-v4
 
-ARG CONTAINER_MAJOR_VERSION=1.0
-ARG CONTAINER_MINOR_VERSION=1
+ARG CONTAINER_MAJOR_VERSION=1
+ARG CONTAINER_MINOR_VERSION=0
+ARG CONTAINER_PATCH_VERSION=2
 
 COPY assets/icon.png /tmp/icon.png
 
 RUN \ 
 	set-cont-env HOME "/app" && \
 	set-cont-env APP_NAME "Supermicro Java iKVM Viewer" && \
-	set-cont-env APP_VERSION "1.0" && \
-	set-cont-env DOCKER_IMAGE_VERSION "${CONTAINER_MAJOR_VERSION}.${CONTAINER_MINOR_VERSION}" && \
+	set-cont-env DOCKER_IMAGE_VERSION "${CONTAINER_MAJOR_VERSION}.${CONTAINER_MINOR_VERSION}.${CONTAINER_PATCH_VERSION}" && \
 	set-cont-env DOCKER_IMAGE_PLATFORM "linux/386" && \
-    	APP_ICON_URL=/tmp/icon.png && \
-    	install_app_icon.sh "$APP_ICON_URL"
+		APP_ICON_URL=/tmp/icon.png && \
+		install_app_icon.sh "$APP_ICON_URL"
 
-ARG ZULU_VERSION=zulu8.74.0.17-ca-jre8.0.392-linux_i686
+ARG ZULU_VERSION=zulu8.82.0.21-ca-jre8.0.432-linux_i686
 
 ENV \
-    	KVM_HOST="" \
-    	KVM_USER="" \
-    	KVM_PASS="" \
-    	DISPLAY_WIDTH=1024 \
-    	DISPLAY_HEIGHT=768 \
+		KVM_HOST="" \
+		KVM_USER="" \
+		KVM_PASS="" \
+		DISPLAY_WIDTH=1024 \
+		DISPLAY_HEIGHT=768 \
 		CONTAINER_DEBUG=0 \
 		JAVA_VERBOSE_LOGGING=0 \
 		PATH="${PATH}:/opt/${ZULU_VERSION}/bin"
@@ -41,8 +41,15 @@ RUN \
 	del-pkg certs && \
 	rm /tmp/${ZULU_VERSION}.tar.gz
 
+RUN add-pkg locales && rm -rf /var/lib/apt/lists/* \
+    && localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
+
+ENV LANG en_US.UTF-8
+
 COPY rootfs /
 
+# 5800: Port to access the application's GUI via the web interface
+# 5900: Port to access the application's GUI via the VNC protocol
 EXPOSE 5800 5900
 
 WORKDIR /app
@@ -52,5 +59,5 @@ LABEL \
 	org.opencontainers.image.title="Supermicro Java iKVM Viewer" \
 	org.opencontainers.image.description="A container for connecting to Supermicro Java based iKVM viewers via a web browser" \
 	org.opencontainers.image.source=https://github.com/MisterCalvin/supermicro-java-ikvm \
-	org.opencontainers.image.version="${CONTAINER_MAJOR_VERSION}.${CONTAINER_MINOR_VERSION}" \
+	org.opencontainers.image.version="${CONTAINER_MAJOR_VERSION}.${CONTAINER_MINOR_VERSION}.${CONTAINER_PATCH_VERSION}" \
 	org.opencontainers.image.licenses=MIT
