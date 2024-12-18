@@ -19,6 +19,7 @@ services:
       KVM_PASS: # Your IPMI Password
       DISPLAY_WIDTH: 1024 # Display Width
       DISPLAY_HEIGHT: 768 # Display Height
+      CONTAINER_DEBUG: 0 # Set to 1 for container debugging
     ports:
       - 5800:5800 # Web UI Port
       - 5900:5900 # VNC Port
